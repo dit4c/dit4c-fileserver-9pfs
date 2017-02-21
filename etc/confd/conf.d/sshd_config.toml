@@ -1,0 +1,9 @@
+[template]
+src = "sshd_config.tmpl"
+dest = "/dev/shm/sshd_config"
+uid = 0
+gid = 0
+mode = "0644"
+keys = [
+  "/ssh/keydir"
+]

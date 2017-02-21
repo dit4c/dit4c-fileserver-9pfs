@@ -1,0 +1,9 @@
+[template]
+src = "connect-login.tmpl"
+dest = "/dev/shm/bin/connect-login"
+uid = 0
+gid = 0
+mode = "0755"
+keys = [
+  "/storage/root"
+]

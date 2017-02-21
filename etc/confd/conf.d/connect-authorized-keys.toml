@@ -1,0 +1,9 @@
+[template]
+src = "connect-authorized-keys.tmpl"
+dest = "/dev/shm/bin/connect-authorized-keys"
+uid = 0
+gid = 0
+mode = "0755"
+keys = [
+  "/pgp/cachedir"
+]

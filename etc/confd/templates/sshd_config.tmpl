@@ -1,0 +1,36 @@
+Port 22
+Protocol 2
+HostKey {{getv "/ssh/keydir"}}/ssh_host_rsa_key
+
+LogLevel INFO
+
+PermitRootLogin no
+StrictModes yes
+PubkeyAuthentication yes
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+
+# Not using static files
+AuthorizedKeysFile	none
+AuthorizedKeysCommandUser nobody
+
+PermitUserEnvironment yes
+AllowAgentForwarding no
+AllowStreamLocalForwarding no
+AllowTcpForwarding no
+PermitTTY no
+X11Forwarding no
+
+ClientAliveInterval 60
+StreamLocalBindUnlink yes
+StreamLocalBindMask 0111
+
+AllowUsers connect register
+
+Match User connect
+AuthorizedKeysCommand /dev/shm/bin/connect-authorized-keys %k
+ForceCommand /dev/shm/bin/connect-login
+
+Match User register
+AuthorizedKeysCommand /bin/echo %t %k
+ForceCommand /dev/shm/bin/register-login

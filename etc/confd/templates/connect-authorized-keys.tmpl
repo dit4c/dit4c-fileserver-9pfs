@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+KEY=$1
+FILENAME=$(echo $KEY | base64 -d | sha512sum | awk '{print $1}')
+
+if [[ -e "{{getv "/pgp/cachedir"}}/$FILENAME" ]]; then
+	cat "{{getv "/pgp/cachedir"}}/$FILENAME"
+fi

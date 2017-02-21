@@ -1,0 +1,16 @@
+sudo: required
+dist: trusty
+language: generic
+script: make
+before_deploy:
+- make deploy
+deploy:
+  provider: releases
+  api_key:
+  file:
+    - dist/dit4c-fileserver-9pfs.linux.amd64.aci
+    - dist/dit4c-fileserver-9pfs.linux.amd64.aci.asc
+  on:
+    tags: true
+    repo: dit4c/dit4c-fileserver-9pfs
+  skip_cleanup: true

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/sbin/sshd -o "LogLevel VERBOSE" -D -E /dev/stdout -f /dev/shm/sshd_config

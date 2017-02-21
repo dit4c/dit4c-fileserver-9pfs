@@ -1,0 +1,79 @@
+#!/bin/sh
+
+set -e
+
+DIT4C_PORTAL="{{getv "/dit4c/portal"}}"
+STORAGE_ROOT="{{getv "/storage/root"}}"
+
+# Ensure output dir exists
+OUTPUT_DIR="{{getv "/pgp/cachedir"}}"
+mkdir -p "$OUTPUT_DIR"
+# Ensure output directory is global-readable
+chmod 0755 "$OUTPUT_DIR"
+# Create all files as global-readable
+umask 022
+
+# Read and sanitize
+DIT4C_INSTANCE=$SSH_ORIGINAL_COMMAND
+SAFE_DIT4C_INSTANCE=$(echo $DIT4C_INSTANCE | sed -ne '/^[a-z0-9][a-z0-9-]\{0,62\}$/p' | head -1)
+if [[ "$SAFE_DIT4C_INSTANCE" == "" ]]; then
+	echo $DIT4C_INSTANCE does not match '/^[a-z0-9][a-z0-9-]\{0,62\}$/p'
+	exit 1
+fi
+
+mkdir -p /tmp/keyrings
+TMP_FILE=$(mktemp -p /tmp/keyrings)
+GPG="gpg2 --no-default-keyring --keyring $TMP_FILE"
+
+# Get remote PGP keys and import
+KEY_URL="${DIT4C_PORTAL}/instances/$DIT4C_INSTANCE/pgp-keys"
+PRIMARY_KEY_ID=$(
+# Get remote key
+curl -H 'Accept: application/pgp-keys' -sL $KEY_URL |
+# Import to temporary keyring
+$GPG --import 2>&1 |
+# Extract key ID from output
+sed -ne '1s/^.*key \(.*\):.*$/\1/p'
+)
+if [[ "$PRIMARY_KEY_ID" = "" ]]; then
+	echo "Unable to import key from $KEY_URL" 1>&2
+	exit 1
+else
+	echo "Primary key $PRIMARY_KEY_ID imported"
+fi
+
+AUTH_KEYS=$(
+$GPG --with-colons --list-keys $PRIMARY_KEY_ID |
+# Get valid primary/sub keys
+sed -ne '/^[ps]ub:[-qnmfu]/p' |
+# Select key id & capabilities columns
+cut -d: -f5,12 |
+# Filter for keys that have authentication capability
+sed -ne '/:.*a.*$/p' |
+# Extract key id
+cut -d: -f1
+)
+for KEY_ID in $AUTH_KEYS
+do
+	AUTH_KEYS_LINE=$($GPG --export-ssh-key $KEY_ID\!)
+	KEY=$(echo $AUTH_KEYS_LINE | awk '{print $2}')
+	DIGEST=$(echo -n $KEY | base64 -d | sha512sum | awk '{print $1}')
+	echo 'environment="DIT4C_INSTANCE='$DIT4C_INSTANCE'"' $AUTH_KEYS_LINE > $OUTPUT_DIR/$DIGEST
+	echo "Authentication key $KEY_ID imported"
+done
+
+# Create instance (& possibly user) directories
+CREATOR_URL="${DIT4C_PORTAL}/instances/$DIT4C_INSTANCE/creator"
+DIT4C_USER=$(
+	curl -H 'Accept: text/plain' -sL --fail $CREATOR_URL |
+	tr -cd '[:alpha:][:digit:]-'
+)
+if [[ "$DIT4C_USER" == "" ]]; then
+	echo "Unable to resolve instance creator. Aborting!"
+	exit 1
+fi
+INSTANCE_DIR="$STORAGE_ROOT/instances/$DIT4C_INSTANCE"
+USER_DIR="$STORAGE_ROOT/users/$DIT4C_USER"
+test -d "$INSTANCE_DIR" || (umask 0027 && mkdir -p "$INSTANCE_DIR")
+test -d "$USER_DIR" || (umask 0007 && mkdir -p "$USER_DIR")
+test -d "$INSTANCE_DIR/instance-creator" || ln -s "$USER_DIR" "$INSTANCE_DIR/instance-creator"

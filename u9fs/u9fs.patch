@@ -1,0 +1,68 @@
+diff --git a/authrhosts.c b/authrhosts.c
+deleted file mode 100644
+index de15085..0000000
+--- a/authrhosts.c
++++ /dev/null
+@@ -1,38 +0,0 @@
+-#include <plan9.h>
+-#include <fcall.h>
+-#include <u9fs.h>
+-
+-/*
+- * return whether the user is authenticated.
+- * uses berkeley-style rhosts ``authentication''.
+- * this is only a good idea behind a firewall,
+- * where you trust your network, and even then
+- * not such a great idea.  it's grandfathered.
+- */
+-
+-static char*
+-rhostsauth(Fcall *rx, Fcall *tx)
+-{
+-	USED(rx);
+-	USED(tx);
+-
+-	return "u9fs rhostsauth: no authentication required";
+-}
+-
+-static char*
+-rhostsattach(Fcall *rx, Fcall *tx)
+-{
+-	USED(tx);
+-
+-	if(ruserok(remotehostname, 0, rx->uname, rx->uname) < 0){
+-		fprint(2, "ruserok(%s, %s) not okay\n", remotehostname, rx->uname);
+-		return "u9fs: rhosts authentication failed";
+-	}
+-	return 0;
+-}
+-
+-Auth authrhosts = {
+-	"rhosts",
+-	rhostsauth,
+-	rhostsattach,
+-};
+diff --git a/makefile b/makefile
+index 7cc6d5d..57b0bb3 100644
+--- a/makefile
++++ b/makefile
+@@ -23,7 +23,6 @@ DESTROOT=/usr/local
+ 
+ OFILES=\
+ 	authnone.o\
+-	authrhosts.o\
+ 	authp9any.o\
+ 	convD2M.o\
+ 	convM2D.o\
+diff --git a/u9fs.c b/u9fs.c
+index 1856e1b..ce135cd 100644
+--- a/u9fs.c
++++ b/u9fs.c
+@@ -152,7 +152,6 @@ char*	root;
+ User*	none;
+ 
+ Auth *authmethods[] = {	/* first is default */
+-	&authrhosts,
+ 	&authp9any,
+ 	&authnone,
+ };

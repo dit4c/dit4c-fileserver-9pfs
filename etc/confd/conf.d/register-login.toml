@@ -1,0 +1,11 @@
+[template]
+src = "register-login.tmpl"
+dest = "/dev/shm/bin/register-login"
+uid = 0
+gid = 0
+mode = "0755"
+keys = [
+  "/dit4c/portal",
+  "/pgp/cachedir",
+  "/storage/root"
+]
