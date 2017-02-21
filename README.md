@@ -1,4 +1,4 @@
-# dit4c-routing-server
+# dit4c-fileserver-9pfs
 
 [![Build Status](https://travis-ci.org/dit4c/dit4c-fileserver-9pfs.svg?branch=master)](https://travis-ci.org/dit4c/dit4c-fileserver-9pfs)
 
