@@ -3,10 +3,12 @@ dist: trusty
 language: generic
 script: make
 before_deploy:
+- openssl aes-256-cbc -K $encrypted_ee999d9b88e1_key -iv $encrypted_ee999d9b88e1_iv -in signing.key.enc -out signing.key -d
 - make deploy
 deploy:
   provider: releases
   api_key:
+    secure: mhOf/drFOFprx85aRoV9qNs5LGiN97qNI/dSrGtxICp/j3Pz96FmdPqlygMYCrhSppBo0oY/Z1TZoc3BbyWLwixA0Gm4MGG7rnKiQUHJub09fmTf1CbkckGZiESEq3wedEUYhui/KMB4H8lY6gs24ypoEEYlJEEUKLAdAtPX8i2NB6DBQDucMuPyI/WJWI9UZ7yMbhvOC3EYiolVtwMBdjnjk7i0kbvvyIeCJ9ITpVtQdxSjob1TXDqn0fRt92qJRSggNz/AAlWzJsFgNEyhjDvhk0YdQi8fGqxdYA9+2s+AjPfhrvxSXwSv8fC4EtzxH94t1tV+gTURB4lLEq2JpsKBCYnrXx5QtnRwjJomYPQaT5E7HxbordnyCFb6vi8XPgApSxuhBHhQiIR57T5aUEbAamhuPlmdsqAWwlbk8CIuyQl6TAhlfHFtktcdlhrEGMvTh4qpWomeyNjrcEG4MmUaWiJksYnnKensdWvrlyafbizimOg8aLnCy2EK1Q+Vagc6+z3jGtnUZnJiH3+GgYgCQlo9QtB5gmNRQ/8O+/5e1HCYpNFZD2SMENcqm4VhuGCKMueigkOk6Tgk3ehkbUOLYU1STkASDuWtVn1rw4EgEMvl59M9AvOxc+syFw+DhvNLyqDdNzjUWvIDBhNzOmRxC4GIy59EF29z00v1yrM=
   file:
     - dist/dit4c-fileserver-9pfs.linux.amd64.aci
     - dist/dit4c-fileserver-9pfs.linux.amd64.aci.asc
